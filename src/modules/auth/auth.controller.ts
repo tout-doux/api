@@ -1,7 +1,7 @@
-import { Controller, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Res, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { LocalAuthGuard } from 'src/guards/local-auth.guard';
+import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -9,7 +9,18 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Body() loginDto: LoginDto): Promise<{ access_token: string }> {
-    return this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto, @Res() res) {
+    const token = await this.authService.login(loginDto);
+    res.cookie('access_token', token.access_token, { httpOnly: true });
+    res.cookie('refresh_token', token.refresh_token, { httpOnly: true });
+    return res.send();
+  }
+
+  @Post('refresh')
+  async refresh(@Req() request, @Res() res) {
+    const refreshToken: string = request.cookies['refresh_token'];
+    const accessToken = await this.authService.getNewAccessToken(refreshToken);
+    res.cookie('access_token', accessToken, { httpOnly: true });
+    return res.send();
   }
 }
