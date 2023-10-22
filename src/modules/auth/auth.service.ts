@@ -53,30 +53,23 @@ export class AuthService {
     return await this.userService.saveRefreshToken(user, token);
   }
 
-  async getNewAccessToken(
-    refreshToken: string,
-  ): Promise<{ access_token: string }> {
-    try {
-      const payload = this.jwtService.verify(refreshToken);
-      console.log(payload);
-      if (!payload.isRefreshToken) {
-        throw new UnauthorizedException('Invalid refresh token');
-      }
-
-      const user: User = await this.userService.findOneById(payload.sub);
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
-      const storedRefreshToken = await this.userService.findRefreshToken(user);
-
-      if (storedRefreshToken.token !== refreshToken) {
-        throw new UnauthorizedException('Invalid refresh token');
-      }
-
-      const accessToken = this.generateAccessToken(user);
-      return { access_token: accessToken };
-    } catch (error) {
+  async getNewAccessToken(refreshToken: string): Promise<string> {
+    const payload = this.jwtService.verify(refreshToken);
+    if (!payload.isRefreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
     }
+
+    const user: User = await this.userService.findOneById(payload.sub);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const storedRefreshToken = await this.userService.findRefreshToken(user);
+
+    if (storedRefreshToken.token !== refreshToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const accessToken = this.generateAccessToken(user);
+    return accessToken;
   }
 }

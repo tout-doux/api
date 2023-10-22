@@ -48,7 +48,6 @@ export class UserService {
         user,
         token,
       });
-      console.log(refreshToken);
     }
     await this.refreshTokenRepository.save(refreshToken);
   }
