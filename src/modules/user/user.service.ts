@@ -1,65 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './entity/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { User, UserDocument } from './user.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { RefreshToken } from '../auth/entities/refresh-token.entity';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-    @InjectRepository(RefreshToken)
-    private readonly refreshTokenRepository: Repository<RefreshToken>,
-  ) {}
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = new User();
-    user.username = createUserDto.username;
+  async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     const salt = await bcrypt.genSalt();
-    user.password = await bcrypt.hash(createUserDto.password, salt);
-    return this.userRepository.save(user);
+    createUserDto.password = await bcrypt.hash(createUserDto.password, salt);
+    const createdUser = new this.userModel(createUserDto);
+    return createdUser.save();
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+  async findAll(): Promise<UserDocument[]> {
+    return this.userModel.find().exec();
   }
 
-  async findOneByUsername(username: string): Promise<User> {
-    return this.userRepository.findOne({ where: { username: username } });
+  async findOneByUsername(username: string): Promise<UserDocument> {
+    return this.userModel.findOne({ username: username });
   }
 
-  async findOneById(id: number): Promise<User> {
-    return this.userRepository.findOne({ where: { id: id } });
-  }
-
-  async update(user: User): Promise<User> {
-    return this.userRepository.save(user);
-  }
-
-  async saveRefreshToken(user: User, token: string): Promise<void> {
-    let refreshToken = await this.findRefreshToken(user);
-    if (refreshToken) {
-      refreshToken.token = token;
-    } else {
-      refreshToken = this.refreshTokenRepository.create({
-        user,
-        token,
-      });
-    }
-    await this.refreshTokenRepository.save(refreshToken);
-  }
-
-  async findRefreshToken(user: User): Promise<RefreshToken> {
-    return this.refreshTokenRepository.findOne({
-      where: { user: { id: user.id } },
-      relations: ['user'],
-    });
-  }
-
-  async findAllRefreshTokens(): Promise<RefreshToken[]> {
-    return this.refreshTokenRepository.find({ relations: ['user'] });
+  async findById(id: string): Promise<UserDocument> {
+    return this.userModel.findById(id);
   }
 }

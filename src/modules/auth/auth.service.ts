@@ -6,17 +6,25 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
-import { User } from '../user/entity/user.entity';
+import { InjectModel } from '@nestjs/mongoose';
 import { LoginDto } from './dto/login.dto';
+import { RefreshToken, RefreshTokenDocument } from './refresh-token.schema';
+import { Model } from 'mongoose';
+import { UserDocument } from '../user/user.schema';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    @InjectModel(RefreshToken.name)
+    private refreshTokenModel: Model<RefreshToken>,
   ) {}
 
-  async validateUser(username: string, password: string): Promise<User> {
+  async validateUser(
+    username: string,
+    password: string,
+  ): Promise<UserDocument> {
     const user = await this.userService.findOneByUsername(username);
     if (user && (await bcrypt.compare(password, user.password))) {
       return user;
@@ -39,18 +47,14 @@ export class AuthService {
     };
   }
 
-  generateAccessToken(user: User): string {
-    const payload = { username: user.username, sub: user.id };
+  generateAccessToken(user: UserDocument): string {
+    const payload = { username: user.username, sub: user._id };
     return this.jwtService.sign(payload);
   }
 
-  generateRefreshToken(user: User): string {
-    const payload = { sub: user.id, isRefreshToken: true };
+  generateRefreshToken(user: UserDocument): string {
+    const payload = { sub: user._id, isRefreshToken: true };
     return this.jwtService.sign(payload, { expiresIn: '7d' });
-  }
-
-  async saveRefreshToken(user: User, token: string) {
-    return await this.userService.saveRefreshToken(user, token);
   }
 
   async getNewAccessToken(refreshToken: string): Promise<string> {
@@ -59,11 +63,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const user: User = await this.userService.findOneById(payload.sub);
+    const user: UserDocument = await this.userService.findById(payload.sub);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const storedRefreshToken = await this.userService.findRefreshToken(user);
+    const storedRefreshToken = await this.findRefreshToken(user);
 
     if (storedRefreshToken.token !== refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
@@ -71,5 +75,24 @@ export class AuthService {
 
     const accessToken = this.generateAccessToken(user);
     return accessToken;
+  }
+
+  async findRefreshToken(user: UserDocument): Promise<RefreshTokenDocument> {
+    return this.refreshTokenModel.findOne({
+      user: user._id,
+    });
+  }
+
+  async saveRefreshToken(user: UserDocument, token: string): Promise<void> {
+    let refreshToken = await this.findRefreshToken(user);
+    if (refreshToken) {
+      refreshToken.token = token;
+    } else {
+      refreshToken = new this.refreshTokenModel({
+        user: user._id,
+        token: token,
+      });
+    }
+    await refreshToken.save();
   }
 }
