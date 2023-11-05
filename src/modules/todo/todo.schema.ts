@@ -11,8 +11,11 @@ export class Todo {
   @Prop({ required: true, default: false })
   completed: boolean;
 
-  @Prop({ required: true, type: Types.ObjectId, ref: 'TodoList' })
+  @Prop({ required: false, type: Types.ObjectId, ref: 'TodoList' })
   listId: Types.ObjectId;
+
+  @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
+  creatorId: Types.ObjectId;
 }
 
 export const TodoSchema = SchemaFactory.createForClass(Todo);

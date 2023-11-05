@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 import { Types } from 'mongoose';
 
 export class CreateTodoDto {
@@ -7,7 +7,6 @@ export class CreateTodoDto {
   @ApiProperty()
   title: string;
 
-  @IsNotEmpty()
   @ApiProperty()
   listId: Types.ObjectId;
 }

@@ -16,20 +16,26 @@ export class TodoService {
     @InjectModel(Todo.name) private todoModel: Model<Todo>,
   ) {}
   async create(createTodoDto: CreateTodoDto, userId: string): Promise<Todo> {
-    console.log(createTodoDto);
     createTodoDto.listId = new Types.ObjectId(createTodoDto.listId);
-    const list = await this.todoListModel.findById(createTodoDto.listId);
-    if (!list) {
-      throw new NotFoundException('TodoList not found');
+
+    if (createTodoDto.listId) {
+      const list = await this.todoListModel.findById(createTodoDto.listId);
+      if (!list) {
+        throw new NotFoundException('TodoList not found');
+      }
+
+      if (list.creatorId.toString() !== userId) {
+        throw new UnauthorizedException(
+          'You do not have permission to add a todo to this list',
+        );
+      }
     }
 
-    if (list.creatorId.toString() !== userId) {
-      throw new UnauthorizedException(
-        'You do not have permission to add a todo to this list',
-      );
-    }
+    const todo = new this.todoModel({
+      ...createTodoDto,
+      creatorId: userId,
+    });
 
-    const todo = new this.todoModel(createTodoDto);
     return todo.save();
   }
 
@@ -37,9 +43,7 @@ export class TodoService {
     const lists = await this.todoListModel
       .find({ creatorId: userId })
       .select('_id');
-    console.log(lists);
     const listIds = lists.map((list) => list._id);
-    console.log(listIds);
     const todos = await this.todoModel.find({ listId: { $in: listIds } });
     return todos;
   }
