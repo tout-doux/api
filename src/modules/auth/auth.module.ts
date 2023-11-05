@@ -21,7 +21,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '2m' },
+        signOptions: { expiresIn: '2h' },
       }),
       inject: [ConfigService],
     }),

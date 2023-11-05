@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserService } from './user.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -22,7 +30,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get()
+  @Get('')
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Return all users.', type: [User] })
   async findAll(): Promise<User[]> {
@@ -30,7 +38,17 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('/me')
+  @ApiOperation({ summary: 'Get current user' })
+  @ApiResponse({ status: 200, description: 'Return current user.', type: User })
+  async findCurrentUser(@Req() req): Promise<User> {
+    return await this.userService.findById(req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('/:id')
+  @ApiOperation({ summary: 'Get user by id' })
+  @ApiResponse({ status: 200, description: 'Return user by id.', type: [User] })
   async findById(@Param('id') id: string): Promise<User> {
     return await this.userService.findById(id);
   }
