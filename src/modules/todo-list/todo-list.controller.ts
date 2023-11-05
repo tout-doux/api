@@ -7,6 +7,7 @@ import {
   Req,
   Param,
   Put,
+  Delete,
 } from '@nestjs/common';
 import { TodoListService } from './todo-list.service';
 import { CreateTodoListDto } from './dto/create-todo-list.dto';
@@ -22,7 +23,7 @@ export class TodoListController {
   constructor(private readonly todoListService: TodoListService) {}
 
   @Post('/create')
-  @ApiOperation({ summary: 'Create my todo list' })
+  @ApiOperation({ summary: 'Create todo list' })
   @ApiResponse({
     status: 200,
     description: 'The todo list has been successfully created.',
@@ -36,19 +37,29 @@ export class TodoListController {
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Create my todo list' })
+  @ApiOperation({ summary: 'Update todo list' })
   @ApiResponse({
     status: 200,
-    description: 'The todo list has been successfully created.',
+    description: 'The todo list has been successfully updated.',
     type: TodoList,
   })
-  update(
+  async update(
     @Body() updateTodoListDto: UpdateTodoListDto,
     @Param('id') id,
-  ): Promise<TodoList> {
-    return this.todoListService.update(id, updateTodoListDto);
+  ): Promise<TodoList | void> {
+    return await this.todoListService.update(id, updateTodoListDto);
   }
 
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete todo list' })
+  @ApiResponse({
+    status: 200,
+    description: 'The todo list has been successfully deleted.',
+    type: TodoList,
+  })
+  async delete(@Param('id') id): Promise<void> {
+    await this.todoListService.delete(id);
+  }
   @Get()
   @ApiOperation({ summary: 'Get all my todo lists' })
   @ApiResponse({

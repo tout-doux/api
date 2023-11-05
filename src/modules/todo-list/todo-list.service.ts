@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTodoListDto } from './dto/create-todo-list.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { TodoList } from './todo-list.schema';
@@ -26,8 +26,20 @@ export class TodoListService {
   async update(
     id: string,
     updateTodoListDto: UpdateTodoListDto,
-  ): Promise<TodoList> {
-    return await this.todoListModel.findByIdAndUpdate(id, updateTodoListDto);
+  ): Promise<TodoList | void> {
+    try {
+      await this.todoListModel.findByIdAndUpdate(id, updateTodoListDto);
+    } catch (error) {
+      throw new NotFoundException('TodoList not found');
+    }
+  }
+
+  async delete(id: string): Promise<void> {
+    try {
+      await this.todoListModel.findByIdAndDelete(id);
+    } catch (error) {
+      throw new NotFoundException('TodoList not found');
+    }
   }
 
   async findAllByUserId(userId: string): Promise<TodoList[]> {

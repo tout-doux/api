@@ -39,6 +39,22 @@ export class TodoService {
     return todo.save();
   }
 
+  async update(id: string, updateTodoDto: CreateTodoDto): Promise<Todo | void> {
+    try {
+      return this.todoModel.findByIdAndUpdate(id, updateTodoDto);
+    } catch (error) {
+      throw new NotFoundException('Todo not found');
+    }
+  }
+
+  async delete(id: string): Promise<void> {
+    try {
+      await this.todoModel.findByIdAndDelete(id);
+    } catch (error) {
+      throw new NotFoundException('Todo not found');
+    }
+  }
+
   async findAllByUserId(userId: string): Promise<Todo[]> {
     const lists = await this.todoListModel
       .find({
