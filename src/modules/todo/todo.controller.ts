@@ -2,10 +2,11 @@ import { Controller, Post, Body, Req, Get, UseGuards } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { Todo } from './todo.schema';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
+@ApiTags('todos')
 @Controller('todos')
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}

@@ -18,7 +18,6 @@ import { TodoListModule } from './modules/todo-list/todo-list.module';
         uri: configService.get<string>('MONGODB_URI'),
       }),
     }),
-
     UserModule,
     AuthModule,
     TodoModule,

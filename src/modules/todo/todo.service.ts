@@ -39,6 +39,7 @@ export class TodoService {
     return todo.save();
   }
 
+  //TODO retrieve todos where user is member of list
   async findAllByUserId(userId: string): Promise<Todo[]> {
     const lists = await this.todoListModel
       .find({ creatorId: userId })
