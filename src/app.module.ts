@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './modules/user/user.module';
@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TodoModule } from './modules/todo/todo.module';
 import { TodoListModule } from './modules/todo-list/todo-list.module';
+import { LoggingMiddleware } from './middlewares/logging.middleware';
 
 @Module({
   imports: [
@@ -26,4 +27,10 @@ import { TodoListModule } from './modules/todo-list/todo-list.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggingMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
