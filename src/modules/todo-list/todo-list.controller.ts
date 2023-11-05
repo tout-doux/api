@@ -1,9 +1,19 @@
-import { Controller, Post, Body, UseGuards, Get, Req } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  Req,
+  Param,
+  Put,
+} from '@nestjs/common';
 import { TodoListService } from './todo-list.service';
 import { CreateTodoListDto } from './dto/create-todo-list.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TodoList } from './todo-list.schema';
+import { UpdateTodoListDto } from './dto/update-todo-list.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('todo-lists')
@@ -23,6 +33,20 @@ export class TodoListController {
     @Req() req,
   ): Promise<TodoList> {
     return this.todoListService.create(createTodoListDto, req.user.userId);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Create my todo list' })
+  @ApiResponse({
+    status: 200,
+    description: 'The todo list has been successfully created.',
+    type: TodoList,
+  })
+  update(
+    @Body() updateTodoListDto: UpdateTodoListDto,
+    @Param('id') id,
+  ): Promise<TodoList> {
+    return this.todoListService.update(id, updateTodoListDto);
   }
 
   @Get()

@@ -39,10 +39,11 @@ export class TodoService {
     return todo.save();
   }
 
-  //TODO retrieve todos where user is member of list
   async findAllByUserId(userId: string): Promise<Todo[]> {
     const lists = await this.todoListModel
-      .find({ creatorId: userId })
+      .find({
+        $or: [{ creatorId: userId }, { members: { $in: [userId] } }],
+      })
       .select('_id');
     const listIds = lists.map((list) => list._id);
     const todos = await this.todoModel.find({ listId: { $in: listIds } });

@@ -1,9 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 
-export class CreateTodoListDto {
+export class UpdateTodoListDto {
   @IsString()
-  @IsNotEmpty()
   @ApiProperty()
   name: string;
 
