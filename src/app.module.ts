@@ -5,6 +5,8 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { TodoModule } from './modules/todo/todo.module';
+import { TodoListModule } from './modules/todo-list/todo-list.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 
     UserModule,
     AuthModule,
+    TodoModule,
+    TodoListModule,
   ],
   controllers: [AppController],
   providers: [AppService],
