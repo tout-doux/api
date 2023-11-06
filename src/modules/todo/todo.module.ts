@@ -4,6 +4,8 @@ import { TodoController } from './todo.controller';
 import { Todo, TodoSchema } from './todo.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TodoList, TodoListSchema } from '../todo-list/todo-list.schema';
+import { AppGateway } from 'src/app.gateway';
+import { TodoEventsService } from './todo.gateway';
 
 @Module({
   imports: [
@@ -13,6 +15,6 @@ import { TodoList, TodoListSchema } from '../todo-list/todo-list.schema';
     ]),
   ],
   controllers: [TodoController],
-  providers: [TodoService],
+  providers: [TodoService, TodoEventsService, AppGateway],
 })
 export class TodoModule {}

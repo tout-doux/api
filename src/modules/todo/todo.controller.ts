@@ -11,16 +11,20 @@ import {
 } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
-import { Todo } from './todo.schema';
+import { Todo, TodoDocument } from './todo.schema';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import { TodoEventsService } from './todo.gateway';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('todos')
 @Controller('todos')
 export class TodoController {
-  constructor(private readonly todoService: TodoService) {}
+  constructor(
+    private readonly todoService: TodoService,
+    private readonly todoEventsService: TodoEventsService,
+  ) {}
 
   @Post('/create')
   @ApiOperation({ summary: 'Create my todo' })
@@ -33,7 +37,12 @@ export class TodoController {
     @Body() createTodoDto: CreateTodoDto,
     @Req() req,
   ): Promise<Todo> {
-    return this.todoService.create(createTodoDto, req.user.userId);
+    const newTodo: Todo = await this.todoService.create(
+      createTodoDto,
+      req.user.userId,
+    );
+    this.todoEventsService.notifyTodoCreated(newTodo);
+    return newTodo;
   }
 
   @Put(':id')

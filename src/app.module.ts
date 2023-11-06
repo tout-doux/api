@@ -11,6 +11,7 @@ import { LoggingMiddleware } from './middlewares/logging.middleware';
 
 @Module({
   imports: [
+    AuthModule,
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -20,7 +21,6 @@ import { LoggingMiddleware } from './middlewares/logging.middleware';
       }),
     }),
     UserModule,
-    AuthModule,
     TodoModule,
     TodoListModule,
   ],

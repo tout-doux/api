@@ -16,9 +16,9 @@ export class AuthController {
       const token = await this.authService.login(loginDto);
       res.cookie('access_token', token.access_token, { httpOnly: true });
       res.cookie('refresh_token', token.refresh_token, { httpOnly: true });
-      return res.send(200);
+      return res.sendStatus(200);
     } catch (error) {
-      return res.send(401).send(error.message);
+      return res.sendStatus(401).send(error.message);
     }
   }
 
